@@ -1,13 +1,19 @@
 package edu.arobs.meetingsapi.user;
 
+import edu.arobs.meetingsapi.exception.UserNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper ;
+    private final ModelMapper modelMapper;
 
     @Autowired
     public UserService(UserRepository userRepository, ModelMapper modelMapper) {
@@ -15,44 +21,50 @@ public class UserService {
         this.modelMapper = modelMapper;
     }
 
-    public UserDTO create(UserDTO userDTO){
+    @Transactional
+    public UserDTO create(UserDTO userDTO) {
         User user = new User();
         user.setId(null);
-        modelMapper.map(userDTO,user);
+        modelMapper.map(userDTO, user);
         User savedUser = userRepository.save(user);
         UserDTO userCreatedDTO = new UserDTO();
-        modelMapper.map(savedUser,userCreatedDTO);
+        modelMapper.map(savedUser, userCreatedDTO);
         return userCreatedDTO;
     }
 
-    public UserDTO update(Integer id, UserDTO user){
-        UserDTO existingUser = getById(id);
+    @Transactional
+    public UserDTO update(Integer id, UserDTO user) {
         UserDTO updatedUserDTO = new UserDTO();
         User updatedUser = new User();
-        updatedUser.setFirstName(user.getFirstName());
-        updatedUser.setLastName(user.getLastName());
+        updatedUser.setFullName(user.getFullName());
+        updatedUser.setEmail(user.getEmail());
+        updatedUser.setPassword(user.getPassword());
+        updatedUser.setPoints(user.getPoints());
+        updatedUser.setToken(user.getToken());
+        updatedUser.setLastUpdated(Timestamp.valueOf(LocalDateTime.now()));
         updatedUser.setId(id);
         userRepository.save(updatedUser);
-        modelMapper.map(updatedUser,updatedUserDTO);
+        modelMapper.map(updatedUser, updatedUserDTO);
         return updatedUserDTO;
-    //modelMapper.map();
-//        User existingUser = getById(id);
-//        existingUser.setFirstName(user.getFirstName());
-//        existingUser.setLastName(user.getLastName());
-//        return userRepository.save(existingUser);
     }
 
+    @Transactional
     public UserDTO getById(Integer id) {
         UserDTO userDTO = new UserDTO();
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(()->new IllegalArgumentException(String.format("Person id=%d does not exist", id)));
-        modelMapper.map(existingUser,userDTO);
+        User existingUser = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+        modelMapper.map(existingUser, userDTO);
         return userDTO;
     }
 
+    @Transactional
     public UserDTO delete(Integer id) {
         UserDTO existingUserDTO = getById(id);
         userRepository.deleteById(id);
         return existingUserDTO;
+    }
+
+    @Transactional
+    public List<User> findByEmailAndPassword(String email, String password) {
+        return userRepository.findByEmailAndPassword(email, password);
     }
 }

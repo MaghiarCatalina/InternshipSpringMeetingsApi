@@ -1,21 +1,33 @@
 package edu.arobs.meetingsapi.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import edu.arobs.meetingsapi.event.Event;
+import edu.arobs.meetingsapi.time.TimeSetter;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Data
-//@AllArgsConstructor
-public class User {
+@Getter
+@Setter
+public class User extends TimeSetter {
     @Id
     @GeneratedValue
     @NotNull
     private Integer id;
-    private String firstName;
-    private String lastName;
+    private String fullName;
+    private String email;
+    private String password;
+    private Integer points;
+    private String token;
+
+    @ManyToMany(mappedBy = "users")
+    private Set<Event> events = new HashSet<>();
+
+    public User() {
+        super();
+    }
 }

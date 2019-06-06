@@ -4,6 +4,10 @@ import lombok.Data;
 
 @Data
 public class UserDTO {
-    private String firstName;
-    private String lastName;
+    private Integer id;
+    private String fullName;
+    private String email;
+    private String password;
+    private Integer points;
+    private String token;
 }

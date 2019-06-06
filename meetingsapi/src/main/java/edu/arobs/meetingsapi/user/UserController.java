@@ -3,6 +3,8 @@ package edu.arobs.meetingsapi.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -19,18 +21,34 @@ public class UserController {
         return userService.create(user);
     }
 
+    @GetMapping("/{id}")
+    @ResponseBody
+    public UserDTO getUser(@PathVariable Integer id) {
+        return userService.getById(id);
+    }
+
     @PutMapping("/{id}")
     public UserDTO update(@PathVariable Integer id, @RequestBody UserDTO user) {
         return userService.update(id, user);
     }
 
-    @GetMapping("/{id}")
-    public UserDTO get(@PathVariable Integer id) {
-        return userService.getById(id);
+    @GetMapping
+    @ResponseBody
+    public List<User> get(@RequestParam(value = "q") String q, @RequestParam(value = "password") String password) {
+        return userService.findByEmailAndPassword(q, password);
     }
 
     @DeleteMapping("/{id}")
     public UserDTO delete(@PathVariable Integer id) {
         return userService.delete(id);
     }
+
+    @PatchMapping("/{id}")
+    public UserDTO tokenUpdate(@PathVariable Integer id) {
+        UserDTO userDTO = userService.getById(id);
+        userDTO.setToken("usrABC" + id);
+        userService.update(id, userDTO);
+        return userDTO;
+    }
+
 }
